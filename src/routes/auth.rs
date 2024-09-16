@@ -13,19 +13,19 @@ pub struct TokenBody {
 }
 
 #[post("/auth/login")]
-pub fn login(auth_body: web::Json<AuthBody>) -> impl Responder {
+pub async fn login(auth_body: web::Json<AuthBody>) -> impl Responder {
     //TODO: login logic
     HttpResponse::Ok()
 }
 
 #[post("/auth/register")]
-pub fn register(auth_body: web::Json<AuthBody>) -> impl Responder {
+pub async fn register(auth_body: web::Json<AuthBody>) -> impl Responder {
     //TODO: register logic
     HttpResponse::Ok()
 }
 
 #[post("/auth/checkToken")]
-pub fn check_token(token: web::Json<TokenBody>) -> impl Responder {
+pub async fn check_token(token_body: web::Json<TokenBody>) -> impl Responder {
     //TODO: check token logic
     HttpResponse::Ok()
 }
