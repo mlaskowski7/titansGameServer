@@ -1,12 +1,10 @@
-use std::env;
-use actix_web::{get, post, web, HttpResponse, Responder};
+use actix_web::{get, post, web, HttpRequest, HttpResponse, Responder};
 use chrono::{DateTime, Utc};
-use dotenvy::dotenv;
-use jsonwebtoken::{encode, EncodingKey, Header};
 use serde::{Deserialize, Serialize};
 use sqlx::MySqlPool;
 use crate::models::auth::User;
-use crate::services::auth::{login_user, obtain_all_users, obtain_user, register_user};
+use crate::services::auth::{get_user_by_id, login_user, obtain_all_users, obtain_user, register_user};
+use crate::utils::jwt::{extract_jwt_token, generate_jwt_token, validate_jwt_token};
 
 #[derive(Deserialize)]
 pub struct AuthBody {
@@ -49,35 +47,6 @@ impl AuthResponse {
             token,
         }
     }
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct JwtClaims {
-    sub: String,
-    exp: usize,
-}
-
-impl JwtClaims {
-    pub fn new(sub: String, exp: usize) -> Self {
-        JwtClaims {
-            sub,
-            exp
-        }
-    }
-}
-
-fn generate_jwt_token(user_id: i64) -> String {
-    let expiration = Utc::now()
-        .checked_add_signed(chrono::Duration::hours(1))
-        .unwrap()
-        .timestamp() as usize;
-
-    let claims = JwtClaims::new(user_id.to_string(), expiration);
-
-    dotenv().ok();
-    let jwt_secret = env::var("JWT_SECRET").expect("JWT_SECRET must be set");
-
-    encode(&Header::default(), &claims, &EncodingKey::from_secret(jwt_secret.as_ref())).expect("Failed to create JWT token")
 }
 
 #[get("/api/auth/users")]
@@ -141,10 +110,30 @@ pub async fn register(auth_body: web::Json<AuthBody>, pool: web::Data<MySqlPool>
     }
 }
 
-// #[post("/api/auth/checkToken")]
-// pub async fn check_token(token_body: web::Json<TokenBody>) -> impl Responder {
-//     HttpResponse::Ok()
-// }
+#[get("/api/auth/checkToken")]
+pub async fn check_token(req: HttpRequest, pool: web::Data<MySqlPool>) -> impl Responder {
+    match extract_jwt_token(&req) {
+        Some(token) => {
+            match validate_jwt_token(&token) {
+                Ok(claims) => {
+                    let user_id = claims.sub;
+                    match get_user_by_id((&user_id).parse::<i64>().unwrap(), &pool).await {
+                        Ok(Some(user)) => {
+                            HttpResponse::Ok().json(AuthResponse::new(user, token))
+                        }
+                        Ok(None) => HttpResponse::NotFound().json("User not found"),
+                        Err(e) => {
+                            eprintln!("Error occurred while fetching user {:?}", e);
+                            HttpResponse::InternalServerError().json(e.to_string())
+                        }
+                    }
+                },
+                Err(_) => HttpResponse::Unauthorized().json("Invalid token"),
+            }
+        }
+        None => HttpResponse::Unauthorized().body("Unauthorized"),
+    }
+}
 
 
 

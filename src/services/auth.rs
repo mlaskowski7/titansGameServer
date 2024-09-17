@@ -29,6 +29,21 @@ pub async fn obtain_user(username: &str, pool: &MySqlPool) -> Result<Option<User
     Ok(user)
 }
 
+pub async fn get_user_by_id(user_id: i64, pool: &MySqlPool) -> Result<Option<User>, sqlx::Error> {
+    // obtain user from db
+    let user = sqlx::query_as!(
+        User,
+        r#"
+        SELECT id, username, password, created_at
+        FROM users
+        WHERE id = ?
+        "#,
+        user_id
+    ).fetch_optional(pool).await?;
+
+    Ok(user)
+}
+
 pub async fn login_user(username: &str, password: &str, pool: &MySqlPool) -> Result<Option<User>, sqlx::Error> {
     //obtain user from db
     if let Some(user) = obtain_user(username, &pool).await? {
