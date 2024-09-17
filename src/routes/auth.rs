@@ -6,12 +6,17 @@ use jsonwebtoken::{encode, EncodingKey, Header};
 use serde::{Deserialize, Serialize};
 use sqlx::MySqlPool;
 use crate::models::auth::User;
-use crate::services::auth::{obtain_all_users, register_user};
+use crate::services::auth::{login_user, obtain_all_users, obtain_user, register_user};
 
 #[derive(Deserialize)]
 pub struct AuthBody {
     username: String,
     password: String,
+}
+
+#[derive(Deserialize)]
+pub struct TokenBody{
+    token: String,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -75,10 +80,50 @@ fn generate_jwt_token(user_id: i64) -> String {
     encode(&Header::default(), &claims, &EncodingKey::from_secret(jwt_secret.as_ref())).expect("Failed to create JWT token")
 }
 
+#[get("/api/auth/users")]
+pub async fn get_all_users(pool: web::Data<MySqlPool>) -> impl Responder {
+    match obtain_all_users(&pool).await {
+        Ok(users) => {
+            let result: Vec<UserResp> = users
+                .into_iter()
+                .map(UserResp::new)
+                .collect();
+            HttpResponse::Ok().json(result)
+        },
+        Err(e) => {
+            eprintln!("An error occurred while trying to fetch users list from db {}", e);
+            HttpResponse::InternalServerError().json({
+                format!("Error fetching users: {:?}", e)
+            })
+        }
+    }
+}
+
+#[get("/api/auth/user/{username}")]
+pub async fn get_user(username: web::Path<String>, pool: web::Data<MySqlPool>) -> impl Responder {
+    match obtain_user(&username, &pool).await {
+        Ok(Some(user)) => HttpResponse::Ok().json(UserResp::new(user)),
+        Ok(None) => HttpResponse::NotFound().json("User not found"),
+        Err(e) => {
+            eprintln!("Error occurred while registering new user {:?}", e);
+            HttpResponse::InternalServerError().json(e.to_string())
+        }
+    }
+}
+
 #[post("/api/auth/login")]
-pub async fn login(auth_body: web::Json<AuthBody>) -> impl Responder {
-    //TODO: login logic
-    HttpResponse::Ok()
+pub async fn login(auth_body: web::Json<AuthBody>, pool: web::Data<MySqlPool>) -> impl Responder {
+    match login_user(&auth_body.username, &auth_body.password, &pool).await{
+        Ok(Some(user)) => {
+            let token = generate_jwt_token(user.id);
+            HttpResponse::Ok().json(AuthResponse::new(user, token))
+        }
+        Ok(None) => HttpResponse::NotFound().json("Username or password is incorrect"),
+        Err(e) => {
+            eprintln!("Error during login: {}", e);
+            HttpResponse::InternalServerError().json(e.to_string())
+        }
+    }
 }
 
 #[post("/api/auth/register")]
@@ -101,28 +146,12 @@ pub async fn register(auth_body: web::Json<AuthBody>, pool: web::Data<MySqlPool>
 //     HttpResponse::Ok()
 // }
 
-#[get("/api/auth/users")]
-pub async fn get_all_users(pool: web::Data<MySqlPool>) -> impl Responder {
-    match obtain_all_users(&pool).await {
-        Ok(users) => {
-            let result: Vec<UserResp> = users
-                .into_iter()
-                .map(UserResp::new)
-                .collect();
-            HttpResponse::Ok().json(result)
-        },
-        Err(e) => {
-            eprintln!("An error occurred while trying to fetch users list from db {}", e);
-            HttpResponse::InternalServerError().json({
-                format!("Error fetching users: {:?}", e)
-            })
-        }
-    }
-}
+
 
 pub fn config_auth_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(register);
     cfg.service(login);
     // cfg.service(check_token);
     cfg.service(get_all_users);
+    cfg.service(get_user);
 }
