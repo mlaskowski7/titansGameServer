@@ -16,3 +16,4 @@ bcrypt = "0.15.1"
 sqlx = {version = "0.8.2", features = ["macros", "mysql", "runtime-tokio-native-tls", "chrono"]}
 dotenvy = "0.15.7"
 chrono = {version = "0.4.38", features = ["serde"]}
+actix-cors = "0.7.0"

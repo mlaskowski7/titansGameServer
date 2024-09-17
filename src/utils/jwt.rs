@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 
 #[derive(Debug, Serialize, Deserialize)]
-pub(crate) struct JwtClaims {
+pub struct JwtClaims {
     pub sub: String,
     pub exp: usize,
 }

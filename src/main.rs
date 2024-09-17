@@ -1,5 +1,6 @@
 use std::env;
-use actix_web::{web, App, HttpServer};
+use actix_cors::Cors;
+use actix_web::{http, web, App, HttpServer};
 use dotenvy::dotenv;
 use sqlx::mysql::MySqlPoolOptions;
 use titans_game_server::routes::auth::{config_auth_routes};
@@ -20,6 +21,14 @@ async fn main() -> std::io::Result<()> {
     // run http server
     HttpServer::new(move || {
         App::new()
+            .wrap(
+                Cors::default()
+                    .allowed_origin("http://localhost:5173")  // Allow requests from your frontend
+                    .allowed_methods(vec!["GET", "POST"])     // Allow specific HTTP methods
+                    .allowed_headers(vec![http::header::CONTENT_TYPE])
+                    .allow_any_header()
+                    .max_age(3600)
+            )
             .app_data(web::Data::new(pool.clone()))
             .configure(config_auth_routes)
     })
