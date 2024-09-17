@@ -1,5 +1,4 @@
 use bcrypt::{hash, verify, DEFAULT_COST};
-use serde::{Deserialize, Serialize};
 use sqlx::MySqlPool;
 use crate::models::auth::User;
 
@@ -58,7 +57,7 @@ pub async fn register_user(username: &str, password: &str, pool: &MySqlPool) -> 
     }
 
     // insert the user into the db
-    let result = sqlx::query!(
+    sqlx::query!(
         r#"
         INSERT INTO users (username, password)
         VALUES (?, ?)
@@ -66,8 +65,8 @@ pub async fn register_user(username: &str, password: &str, pool: &MySqlPool) -> 
         username,
         hashed_password
     )
-        .execute(pool)
-        .await?;
+    .execute(pool)
+    .await?;
 
 
     // obtain the created user from db
