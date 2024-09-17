@@ -1,6 +1,6 @@
 use std::env;
 use actix_web::{get, post, web, HttpResponse, Responder};
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 use dotenvy::dotenv;
 use jsonwebtoken::{encode, EncodingKey, Header};
 use serde::{Deserialize, Serialize};
@@ -14,16 +14,33 @@ pub struct AuthBody {
     password: String,
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct UserResp {
+    id: i64,
+    username: String,
+    created_at: DateTime<Utc>,
+}
+
+impl UserResp {
+    pub fn new(user: User) -> Self {
+        UserResp {
+            id : user.id,
+            username : user.username,
+            created_at : user.created_at.unwrap()
+        }
+    }
+}
+
 #[derive(Deserialize, Serialize)]
 pub struct AuthResponse {
-    user: User,
+    user: UserResp,
     token: String,
 }
 
 impl AuthResponse {
     pub fn new(user: User, token: String) -> Self {
         AuthResponse {
-            user,
+            user : UserResp::new(user),
             token,
         }
     }
@@ -87,9 +104,15 @@ pub async fn register(auth_body: web::Json<AuthBody>, pool: web::Data<MySqlPool>
 #[get("/api/auth/users")]
 pub async fn get_all_users(pool: web::Data<MySqlPool>) -> impl Responder {
     match obtain_all_users(&pool).await {
-        Ok(users) => HttpResponse::Ok().json(users),
+        Ok(users) => {
+            let result: Vec<UserResp> = users
+                .into_iter()
+                .map(UserResp::new)
+                .collect();
+            HttpResponse::Ok().json(result)
+        },
         Err(e) => {
-            eprintln!("An error occured while trying to fetch users list from db {}", e);
+            eprintln!("An error occurred while trying to fetch users list from db {}", e);
             HttpResponse::InternalServerError().json({
                 format!("Error fetching users: {:?}", e)
             })
