@@ -1,8 +1,11 @@
+use chrono::{DateTime, NaiveDateTime, Utc};
 use serde::{Deserialize, Serialize};
+use sqlx::FromRow;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(FromRow, Debug, Serialize, Deserialize)]
 pub struct User {
     pub id: i64,
     pub username: String,
     pub password: String,
+    pub created_at: Option<DateTime<Utc>>,
 }
