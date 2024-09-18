@@ -117,6 +117,7 @@ pub async fn check_token(req: HttpRequest, pool: web::Data<MySqlPool>) -> impl R
             match validate_jwt_token(&token) {
                 Ok(claims) => {
                     let user_id = claims.sub;
+                    println!("User ID: {}", user_id);
                     match get_user_by_id((&user_id).parse::<i64>().unwrap(), &pool).await {
                         Ok(Some(user)) => {
                             HttpResponse::Ok().json(AuthResponse::new(user, token))
@@ -140,7 +141,7 @@ pub async fn check_token(req: HttpRequest, pool: web::Data<MySqlPool>) -> impl R
 pub fn config_auth_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(register);
     cfg.service(login);
-    // cfg.service(check_token);
+    cfg.service(check_token);
     cfg.service(get_all_users);
     cfg.service(get_user);
 }
