@@ -22,6 +22,8 @@ pub struct UserResp {
     id: i32,
     username: String,
     created_at: DateTime<Utc>,
+    times_logged_in: i32,
+    character_id: i32
 }
 
 impl UserResp {
@@ -29,7 +31,9 @@ impl UserResp {
         UserResp {
             id : user.id,
             username : user.username,
-            created_at : user.created_at.unwrap()
+            created_at : user.created_at.unwrap(),
+            times_logged_in : user.times_logged_in.unwrap(),
+            character_id : user.character_id.unwrap()
         }
     }
 }
