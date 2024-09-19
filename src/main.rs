@@ -4,6 +4,7 @@ use actix_web::{http, web, App, HttpServer};
 use dotenvy::dotenv;
 use sqlx::mysql::MySqlPoolOptions;
 use titans_game_server::routes::auth::{config_auth_routes};
+use titans_game_server::routes::characters::config_characters_routes;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -31,6 +32,7 @@ async fn main() -> std::io::Result<()> {
             )
             .app_data(web::Data::new(pool.clone()))
             .configure(config_auth_routes)
+            .configure(config_characters_routes)
     })
     .bind("127.0.0.1:8080")?
     .run().await

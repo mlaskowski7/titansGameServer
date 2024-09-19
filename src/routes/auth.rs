@@ -62,7 +62,7 @@ pub async fn get_all_users(pool: web::Data<MySqlPool>) -> impl Responder {
                 .map(UserResp::new)
                 .collect();
             HttpResponse::Ok().json(result)
-        },
+        }
         Err(e) => {
             eprintln!("An error occurred while trying to fetch users list from db {}", e);
             HttpResponse::InternalServerError().json({
