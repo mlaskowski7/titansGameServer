@@ -22,8 +22,8 @@ CREATE TABLE users (
    username VARCHAR(255) NOT NULL,
    password VARCHAR(255) NOT NULL,
    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-   times_logged_in INT,
-   character_id INT,
+   times_logged_in INT DEFAULT 1,
+   character_id INT DEFAULT 1 NOT NULL,
    FOREIGN KEY (character_id) REFERENCES characters(id)
 );
 

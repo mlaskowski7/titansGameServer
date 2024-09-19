@@ -20,7 +20,7 @@ impl JwtClaims {
         }
     }
 }
-pub fn generate_jwt_token(user_id: i64) -> String {
+pub fn generate_jwt_token(user_id: i32) -> String {
     let expiration = Utc::now()
         .checked_add_signed(chrono::Duration::hours(1))
         .unwrap()

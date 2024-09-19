@@ -3,7 +3,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::MySqlPool;
 use crate::models::auth::User;
-use crate::services::auth::{get_user_by_id, login_user, obtain_all_users, obtain_user, register_user};
+use crate::services::auth::{get_user_by_id, login_user, obtain_all_users, obtain_user, register_user, update_number_of_logins};
 use crate::utils::jwt::{extract_jwt_token, generate_jwt_token, validate_jwt_token};
 
 #[derive(Deserialize)]
@@ -19,7 +19,7 @@ pub struct TokenBody{
 
 #[derive(Serialize, Deserialize)]
 pub struct UserResp {
-    id: i64,
+    id: i32,
     username: String,
     created_at: DateTime<Utc>,
 }
@@ -84,6 +84,10 @@ pub async fn get_user(username: web::Path<String>, pool: web::Data<MySqlPool>) -
 pub async fn login(auth_body: web::Json<AuthBody>, pool: web::Data<MySqlPool>) -> impl Responder {
     match login_user(&auth_body.username, &auth_body.password, &pool).await{
         Ok(Some(user)) => {
+            match update_number_of_logins(&user.username, &pool).await {
+                Ok(_) => {}
+                Err(e) => {}
+            }
             let token = generate_jwt_token(user.id);
             HttpResponse::Ok().json(AuthResponse::new(user, token))
         }
@@ -117,8 +121,7 @@ pub async fn check_token(req: HttpRequest, pool: web::Data<MySqlPool>) -> impl R
             match validate_jwt_token(&token) {
                 Ok(claims) => {
                     let user_id = claims.sub;
-                    println!("User ID: {}", user_id);
-                    match get_user_by_id((&user_id).parse::<i64>().unwrap(), &pool).await {
+                    match get_user_by_id((&user_id).parse::<i32>().unwrap(), &pool).await {
                         Ok(Some(user)) => {
                             HttpResponse::Ok().json(AuthResponse::new(user, token))
                         }

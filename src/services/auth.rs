@@ -6,7 +6,7 @@ pub async fn obtain_all_users(pool: &MySqlPool) -> Result<Vec<User>, sqlx::Error
     // obtain users list from db
     let users = sqlx::query_as::<_, User>(
         r#"
-            SELECT id, username, password, created_at
+            SELECT id, username, password, created_at, times_logged_in, character_id
             FROM users
         "#
     ).fetch_all(pool).await?;
@@ -19,7 +19,7 @@ pub async fn obtain_user(username: &str, pool: &MySqlPool) -> Result<Option<User
     let user = sqlx::query_as!(
         User,
         r#"
-        SELECT id, username, password, created_at
+        SELECT id, username, password, created_at, times_logged_in, character_id
         FROM users
         WHERE username = ?
         "#,
@@ -29,12 +29,23 @@ pub async fn obtain_user(username: &str, pool: &MySqlPool) -> Result<Option<User
     Ok(user)
 }
 
-pub async fn get_user_by_id(user_id: i64, pool: &MySqlPool) -> Result<Option<User>, sqlx::Error> {
+pub async fn update_number_of_logins(username: &str, pool: &MySqlPool) -> Result<(), sqlx::Error> {
+    sqlx::query!(
+        r#"
+        UPDATE users
+        SET times_logged_in = times_logged_in + 1
+        WHERE username = ?"#,
+        username
+    ).execute(pool).await?;
+    Ok(())
+}
+
+pub async fn get_user_by_id(user_id: i32, pool: &MySqlPool) -> Result<Option<User>, sqlx::Error> {
     // obtain user from db
     let user = sqlx::query_as!(
         User,
         r#"
-        SELECT id, username, password, created_at
+        SELECT id, username, password, created_at, times_logged_in, character_id
         FROM users
         WHERE id = ?
         "#,
@@ -74,8 +85,8 @@ pub async fn register_user(username: &str, password: &str, pool: &MySqlPool) -> 
     // insert the user into the db
     sqlx::query!(
         r#"
-        INSERT INTO users (username, password)
-        VALUES (?, ?)
+        INSERT INTO users (username, password, character_id)
+        VALUES (?, ?, 1)
         "#,
         username,
         hashed_password
@@ -88,7 +99,7 @@ pub async fn register_user(username: &str, password: &str, pool: &MySqlPool) -> 
     let user = sqlx::query_as!(
         User,
         r#"
-        SELECT id, username, password, created_at
+        SELECT id, username, password, created_at, times_logged_in, character_id
         FROM users
         WHERE username = ?
         "#,
