@@ -12,11 +12,6 @@ pub struct AuthBody {
     password: String,
 }
 
-#[derive(Deserialize)]
-pub struct TokenBody{
-    token: String,
-}
-
 #[derive(Serialize, Deserialize)]
 pub struct UserResp {
     id: i32,
@@ -90,7 +85,7 @@ pub async fn login(auth_body: web::Json<AuthBody>, pool: web::Data<MySqlPool>) -
         Ok(Some(user)) => {
             match update_number_of_logins(&user.username, &pool).await {
                 Ok(_) => {}
-                Err(e) => {}
+                Err(_) => {}
             }
             let token = generate_jwt_token(user.id);
             HttpResponse::Ok().json(AuthResponse::new(user, token))
