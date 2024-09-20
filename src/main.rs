@@ -25,7 +25,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(
                 Cors::default()
                     .allowed_origin("http://localhost:5173")  // Allow requests from your frontend
-                    .allowed_methods(vec!["GET", "POST"])     // Allow specific HTTP methods
+                    .allowed_methods(vec!["GET", "POST", "PUT"])     // Allow specific HTTP methods
                     .allowed_headers(vec![http::header::CONTENT_TYPE])
                     .allow_any_header()
                     .max_age(3600)

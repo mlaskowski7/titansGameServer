@@ -12,6 +12,9 @@ test with: `curl -X POST http://localhost:8080/api/auth/register -H "Content-Typ
 ## [POST] login user
 test with: `curl -X POST http://localhost:8080/api/auth/login -H "Content-Type: application/json" -d '{"username": "testuser", "password": "password123"}'`
 
+## [POST] update user
+test with: `curl -X PUT http://localhost:8080/api/auth/user/1 -H "Content-Type: application/json" -d '{"username": "testuser", "character_id": 2}'`
+
 ## [GET] check token
 test with: `curl -X GET http://localhost:8080/api/auth/checkToken -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI3IiwiZXhwIjoxNzI2NjYzNTUwfQ.ZrK4Mtl2h6z4hs19FhhqEVpjnaTDD77fNn_cMvu7rxY"`
 

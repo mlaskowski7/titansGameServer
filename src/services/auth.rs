@@ -139,6 +139,19 @@ pub async fn get_user_by_id(user_id: i32, pool: &MySqlPool) -> Result<Option<Use
     }
 }
 
+pub async fn update_user_by_id(id: i32, update_username: &str, update_character_id: i32, pool: &MySqlPool) -> Result<Option<User>, sqlx::Error> {
+    sqlx::query!(
+        r#"
+        UPDATE users
+        SET username = ?, character_id = ?
+        WHERE id = ?
+        "#,
+        update_username, update_character_id, id
+    ).execute(pool).await?;
+
+    Ok(get_user_by_id(id, pool).await?)
+}
+
 pub async fn login_user(username: &str, password: &str, pool: &MySqlPool) -> Result<Option<User>, sqlx::Error> {
     //obtain user from db
     if let Some(user) = obtain_user(username, &pool).await? {

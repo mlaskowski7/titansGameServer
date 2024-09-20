@@ -1,16 +1,22 @@
-use actix_web::{get, post, web, HttpRequest, HttpResponse, Responder};
+use actix_web::{get, post, put, web, HttpRequest, HttpResponse, Responder};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::MySqlPool;
 use crate::models::auth::User;
 use crate::models::characters::Character;
-use crate::services::auth::{get_user_by_id, login_user, obtain_all_users, obtain_user, register_user, update_number_of_logins};
+use crate::services::auth::{get_user_by_id, login_user, obtain_all_users, obtain_user, register_user, update_number_of_logins, update_user_by_id};
 use crate::utils::jwt::{extract_jwt_token, generate_jwt_token, validate_jwt_token};
 
 #[derive(Deserialize)]
 pub struct AuthBody {
     username: String,
     password: String,
+}
+
+#[derive(Deserialize)]
+pub struct UserBody {
+    username: String,
+    character_id: i32,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -64,6 +70,18 @@ pub async fn get_all_users(pool: web::Data<MySqlPool>) -> impl Responder {
             HttpResponse::InternalServerError().json({
                 format!("Error fetching users: {:?}", e)
             })
+        }
+    }
+}
+
+#[put("/api/auth/user/{id}")]
+pub async fn update_user(id: web::Path<i32>, user_body: web::Json<UserBody>, pool: web::Data<MySqlPool>) -> impl Responder {
+    match update_user_by_id(id.into_inner(), &user_body.username, user_body.character_id, &pool).await {
+        Ok(Some(user)) => HttpResponse::Ok().json(UserResp::new(user)),
+        Ok(None) => HttpResponse::NotFound().json("User not found"),
+        Err(e) => {
+            eprintln!("Error occurred while updating the user {:?}", e);
+            HttpResponse::InternalServerError().json(e.to_string())
         }
     }
 }
@@ -139,12 +157,11 @@ pub async fn check_token(req: HttpRequest, pool: web::Data<MySqlPool>) -> impl R
     }
 }
 
-
-
 pub fn config_auth_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(register);
     cfg.service(login);
     cfg.service(check_token);
     cfg.service(get_all_users);
     cfg.service(get_user);
+    cfg.service(update_user);
 }
