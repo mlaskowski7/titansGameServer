@@ -28,3 +28,9 @@ CREATE TABLE users (
    FOREIGN KEY (character_id) REFERENCES characters(id)
 );
 
+CREATE TABLE friends (
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    friend_id INT REFERENCES users(id) ON DELETE CASCADE,
+    PRIMARY KEY (user_id, friend_id)
+);
+

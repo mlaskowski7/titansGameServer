@@ -3,6 +3,8 @@ use sqlx::MySqlPool;
 use crate::models::auth::User;
 use crate::models::characters::Character;
 
+//TODO: implement friends functionality. Create many to many self relationship on db and implement eager loading on the backend
+
 pub async fn obtain_all_users(pool: &MySqlPool) -> Result<Vec<User>, sqlx::Error> {
     let rows = sqlx::query!(
         r#"
