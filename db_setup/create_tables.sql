@@ -15,7 +15,8 @@ VALUES
     ('Warrior', 100, 80),
     ('Mage', 70, 90),
     ('Rogue', 85, 75),
-    ('Paladin', 120, 60);
+    ('Zombie', 120, 60),
+    ('Minotaur', 150, 40);
 
 CREATE TABLE users (
    id INT AUTO_INCREMENT PRIMARY KEY,
