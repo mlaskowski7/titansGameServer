@@ -3,6 +3,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::MySqlPool;
 use crate::models::auth::User;
+use crate::models::characters::Character;
 use crate::services::auth::{get_user_by_id, login_user, obtain_all_users, obtain_user, register_user, update_number_of_logins};
 use crate::utils::jwt::{extract_jwt_token, generate_jwt_token, validate_jwt_token};
 
@@ -18,7 +19,7 @@ pub struct UserResp {
     username: String,
     created_at: DateTime<Utc>,
     times_logged_in: i32,
-    character_id: i32
+    character: Character,
 }
 
 impl UserResp {
@@ -28,7 +29,7 @@ impl UserResp {
             username : user.username,
             created_at : user.created_at.unwrap(),
             times_logged_in : user.times_logged_in.unwrap(),
-            character_id : user.character_id.unwrap()
+            character : user.character.unwrap()
         }
     }
 }

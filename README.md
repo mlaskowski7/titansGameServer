@@ -14,3 +14,6 @@ test with: `curl -X POST http://localhost:8080/api/auth/login -H "Content-Type: 
 
 ## [GET] check token
 test with: `curl -X GET http://localhost:8080/api/auth/checkToken -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI3IiwiZXhwIjoxNzI2NjYzNTUwfQ.ZrK4Mtl2h6z4hs19FhhqEVpjnaTDD77fNn_cMvu7rxY"`
+
+## [GET] get all characters
+test with: `curl -i -X GET http://localhost:8080/api/characters`
