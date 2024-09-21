@@ -1,6 +1,7 @@
 # drop tables if they exist
 DROP TABLE users;
 DROP TABLE characters;
+DROP TABLE friends;
 
 # create tables
 CREATE TABLE characters (

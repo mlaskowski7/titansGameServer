@@ -20,3 +20,6 @@ test with: `curl -X GET http://localhost:8080/api/auth/checkToken -H "Authorizat
 
 ## [GET] get all characters
 test with: `curl -i -X GET http://localhost:8080/api/characters`
+
+## [POST] add friend
+test with: `curl -i -X POST http://localhost:8080/api/friends/add -H "Content-Type: application/json" -d '{"user_id": 1, "friend_id": 2}'`

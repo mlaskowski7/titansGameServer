@@ -2,7 +2,7 @@ use bcrypt::{hash, verify, DEFAULT_COST};
 use sqlx::MySqlPool;
 use crate::models::auth::User;
 use crate::models::characters::Character;
-
+use crate::utils::db_utils::load_friends_map;
 //TODO: implement friends functionality. Create many to many self relationship on db and implement eager loading on the backend
 
 pub async fn obtain_all_users(pool: &MySqlPool) -> Result<Vec<User>, sqlx::Error> {
@@ -16,6 +16,8 @@ pub async fn obtain_all_users(pool: &MySqlPool) -> Result<Vec<User>, sqlx::Error
     )
     .fetch_all(pool)
     .await?;
+
+    let friends_map = load_friends_map(None, &pool).await?;
 
     let users = rows
         .into_iter()
@@ -39,6 +41,7 @@ pub async fn obtain_all_users(pool: &MySqlPool) -> Result<Vec<User>, sqlx::Error
                 times_logged_in: row.times_logged_in,
                 character,  // Load Character into the User struct
                 character_id: row.character_id,
+                friends: friends_map.get(&row.user_id).cloned().unwrap_or_default(),
             }
         })
         .collect();
@@ -80,6 +83,7 @@ pub async fn obtain_user(username: &str, pool: &MySqlPool) -> Result<Option<User
             times_logged_in: row.times_logged_in,
             character,  // Load Character into the User struct
             character_id: row.character_id,
+            friends: Vec::new(),
         };
 
         Ok(Some(user))
@@ -133,6 +137,7 @@ pub async fn get_user_by_id(user_id: i32, pool: &MySqlPool) -> Result<Option<Use
             times_logged_in: row.times_logged_in,
             character,  // Load Character into the User struct
             character_id: row.character_id,
+            friends: Vec::new()
         };
 
         Ok(Some(user))
@@ -196,4 +201,16 @@ pub async fn register_user(username: &str, password: &str, pool: &MySqlPool) -> 
 
     // obtain the created user from db
     Ok(obtain_user(username, pool).await?)
+}
+
+pub async fn add_friend(user_id: i32, friend_id: i32, pool: &MySqlPool) -> Result<(), sqlx::Error> {
+    sqlx::query!(
+        r#"
+        INSERT INTO friends (user_id, friend_id)
+        VALUES (?, ?)
+        "#,
+        user_id, friend_id
+    ).execute(pool).await?;
+
+    Ok(())
 }

@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use crate::models::characters::Character;
 
-#[derive(FromRow, Debug, Serialize, Deserialize)]
+#[derive(FromRow, Debug, Serialize, Deserialize, Clone)]
 pub struct User {
     pub id: i32,
     pub username: String,
@@ -12,4 +12,5 @@ pub struct User {
     pub times_logged_in: Option<i32>,
     pub character: Option<Character>,
     pub character_id: Option<i32>,
+    pub friends: Vec<User>,
 }
