@@ -15,6 +15,18 @@ pub async fn add_friend(user_id: i32, friend_id: i32, pool: &MySqlPool) -> Resul
     Ok(())
 }
 
+pub async fn remove_friend(user_id: i32, friend_id: i32, pool: &MySqlPool) -> Result<(), sqlx::Error> {
+    sqlx::query!(
+        r#"
+        DELETE FROM friends
+        WHERE user_id = ? AND friend_id = ?
+        "#,
+        user_id, friend_id
+    ).execute(pool).await?;
+
+    Ok(())
+}
+
 pub async fn load_friends_map(user_id: Option<i32>, pool: &MySqlPool) -> Result<HashMap<i32, Vec<User>>, sqlx::Error>  {
     // fetch all friendships
     let rows = sqlx::query!(
