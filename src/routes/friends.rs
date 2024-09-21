@@ -1,7 +1,7 @@
 use actix_web::{post, web, HttpResponse, Responder};
 use serde::Deserialize;
 use sqlx::MySqlPool;
-use crate::services::auth::add_friend;
+use crate::services::friends::add_friend;
 
 #[derive(Deserialize)]
 pub struct AddFriendBody {

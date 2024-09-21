@@ -2,7 +2,7 @@ use bcrypt::{hash, verify, DEFAULT_COST};
 use sqlx::MySqlPool;
 use crate::models::auth::User;
 use crate::models::characters::Character;
-use crate::utils::db_utils::load_friends_map;
+use crate::services::friends::load_friends_map;
 //TODO: implement friends functionality. Create many to many self relationship on db and implement eager loading on the backend
 
 pub async fn obtain_all_users(pool: &MySqlPool) -> Result<Vec<User>, sqlx::Error> {
@@ -63,6 +63,17 @@ pub async fn obtain_user(username: &str, pool: &MySqlPool) -> Result<Option<User
         .fetch_optional(pool)
         .await?;
 
+    // If the row is None (user not found), return None early
+    if row.is_none() {
+        return Ok(None);
+    }
+
+    // Extract the user_id before calling unwrap to avoid moving row multiple times
+    let user_id = row.as_ref().unwrap().user_id;
+
+    // Load the friends map using the extracted user_id
+    let friends_map = load_friends_map(Some(user_id), pool).await?;
+
     if let Some(row) = row {
         let character = if let Some(character_id) = row.character_id {
             Some(Character {
@@ -83,7 +94,7 @@ pub async fn obtain_user(username: &str, pool: &MySqlPool) -> Result<Option<User
             times_logged_in: row.times_logged_in,
             character,  // Load Character into the User struct
             character_id: row.character_id,
-            friends: Vec::new(),
+            friends: friends_map.get(&row.user_id).cloned().unwrap_or_default(),
         };
 
         Ok(Some(user))
@@ -117,6 +128,17 @@ pub async fn get_user_by_id(user_id: i32, pool: &MySqlPool) -> Result<Option<Use
         user_id
     ).fetch_optional(pool).await?;
 
+    // If the row is None (user not found), return None early
+    if row.is_none() {
+        return Ok(None);
+    }
+
+    // Extract the user_id before calling unwrap to avoid moving row multiple times
+    let user_id = row.as_ref().unwrap().id;
+
+    // Load the friends map using the extracted user_id
+    let friends_map = load_friends_map(Some(user_id), pool).await?;
+
     if let Some(row) = row {
         let character = if let Some(character_id) = row.character_id {
             Some(Character {
@@ -137,7 +159,7 @@ pub async fn get_user_by_id(user_id: i32, pool: &MySqlPool) -> Result<Option<Use
             times_logged_in: row.times_logged_in,
             character,  // Load Character into the User struct
             character_id: row.character_id,
-            friends: Vec::new()
+            friends: friends_map.get(&user_id).cloned().unwrap_or_default(),
         };
 
         Ok(Some(user))
@@ -201,16 +223,4 @@ pub async fn register_user(username: &str, password: &str, pool: &MySqlPool) -> 
 
     // obtain the created user from db
     Ok(obtain_user(username, pool).await?)
-}
-
-pub async fn add_friend(user_id: i32, friend_id: i32, pool: &MySqlPool) -> Result<(), sqlx::Error> {
-    sqlx::query!(
-        r#"
-        INSERT INTO friends (user_id, friend_id)
-        VALUES (?, ?)
-        "#,
-        user_id, friend_id
-    ).execute(pool).await?;
-
-    Ok(())
 }

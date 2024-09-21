@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::MySqlPool;
 use crate::models::auth::User;
 use crate::models::characters::Character;
-use crate::services::auth::{add_friend, get_user_by_id, login_user, obtain_all_users, obtain_user, register_user, update_number_of_logins, update_user_by_id};
+use crate::services::auth::{get_user_by_id, login_user, obtain_all_users, obtain_user, register_user, update_number_of_logins, update_user_by_id};
 use crate::utils::jwt::{extract_jwt_token, generate_jwt_token, validate_jwt_token};
 
 #[derive(Deserialize)]
@@ -26,7 +26,7 @@ pub struct UserResp {
     created_at: DateTime<Utc>,
     times_logged_in: i32,
     character: Character,
-    friends: Vec<User>,
+    friends: Vec<UserResp>,
 }
 
 impl UserResp {
@@ -37,7 +37,7 @@ impl UserResp {
             created_at : user.created_at.unwrap(),
             times_logged_in : user.times_logged_in.unwrap(),
             character : user.character.unwrap(),
-            friends: user.friends,
+            friends: user.friends.into_iter().map(UserResp::new).collect(),
         }
     }
 }
