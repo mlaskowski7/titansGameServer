@@ -32,7 +32,7 @@ pub async fn load_friends_map(user_id: Option<i32>, pool: &MySqlPool) -> Result<
     let rows = sqlx::query!(
             r#"
             SELECT f.user_id, u.id AS friend_id, u.username AS friend_username, u.password AS friend_password,
-                   u.created_at AS friend_created_at, u.times_logged_in AS friend_times_logged_in,
+                   u.created_at AS friend_created_at, u.times_logged_in AS friend_times_logged_in, u.points AS friend_points,
                    c.id AS friend_character_id, c.name AS friend_character_name, c.health AS friend_character_health, c.strength AS friend_character_strength
             FROM friends f
             INNER JOIN users u ON f.friend_id = u.id
@@ -53,6 +53,7 @@ pub async fn load_friends_map(user_id: Option<i32>, pool: &MySqlPool) -> Result<
             username: row.friend_username,
             password: row.friend_password,
             created_at: row.friend_created_at,
+            points: row.friend_points,
             times_logged_in: row.friend_times_logged_in,
             character: if let Some(character_id) = row.friend_character_id {
                 Some(

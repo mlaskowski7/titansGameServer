@@ -8,7 +8,7 @@ use crate::services::friends::load_friends_map;
 pub async fn obtain_all_users(pool: &MySqlPool) -> Result<Vec<User>, sqlx::Error> {
     let rows = sqlx::query!(
         r#"
-        SELECT u.id AS user_id, u.username, u.password, u.created_at, u.times_logged_in,
+        SELECT u.id AS user_id, u.username, u.password, u.created_at, u.times_logged_in, u.points,
                c.id AS character_id, c.name AS character_name, c.health AS character_health, c.strength AS character_strength
         FROM users u
         LEFT JOIN characters c ON u.character_id = c.id
@@ -40,6 +40,7 @@ pub async fn obtain_all_users(pool: &MySqlPool) -> Result<Vec<User>, sqlx::Error
                 created_at: row.created_at,
                 times_logged_in: row.times_logged_in,
                 character,  // Load Character into the User struct
+                points: row.points,
                 character_id: row.character_id,
                 friends: friends_map.get(&row.user_id).cloned().unwrap_or_default(),
             }
@@ -52,7 +53,7 @@ pub async fn obtain_all_users(pool: &MySqlPool) -> Result<Vec<User>, sqlx::Error
 pub async fn obtain_user(username: &str, pool: &MySqlPool) -> Result<Option<User>, sqlx::Error> {
     let row = sqlx::query!(
         r#"
-        SELECT u.id AS user_id, u.username, u.password, u.created_at, u.times_logged_in,
+        SELECT u.id AS user_id, u.username, u.password, u.created_at, u.times_logged_in, u.points,
                c.id AS character_id, c.name AS character_name, c.health AS character_health, c.strength AS character_strength
         FROM users u
         LEFT JOIN characters c ON u.character_id = c.id
@@ -93,6 +94,7 @@ pub async fn obtain_user(username: &str, pool: &MySqlPool) -> Result<Option<User
             created_at: row.created_at,
             times_logged_in: row.times_logged_in,
             character,  // Load Character into the User struct
+            points: row.points,
             character_id: row.character_id,
             friends: friends_map.get(&row.user_id).cloned().unwrap_or_default(),
         };
@@ -119,7 +121,7 @@ pub async fn get_user_by_id(user_id: i32, pool: &MySqlPool) -> Result<Option<Use
     // obtain user from db
     let row = sqlx::query!(
         r#"
-        SELECT u.id, u.username, u.password, u.created_at, u.times_logged_in,
+        SELECT u.id, u.username, u.password, u.created_at, u.times_logged_in, u.points,
                c.id AS "character_id?", c.name AS "character_name?", c.health AS "character_health?", c.strength AS "character_strength?"
         FROM users u
         LEFT JOIN characters c ON u.character_id = c.id
@@ -157,6 +159,7 @@ pub async fn get_user_by_id(user_id: i32, pool: &MySqlPool) -> Result<Option<Use
             password: row.password,
             created_at: row.created_at,
             times_logged_in: row.times_logged_in,
+            points: row.points,
             character,  // Load Character into the User struct
             character_id: row.character_id,
             friends: friends_map.get(&user_id).cloned().unwrap_or_default(),

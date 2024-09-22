@@ -25,6 +25,7 @@ pub struct UserResp {
     username: String,
     created_at: DateTime<Utc>,
     times_logged_in: i32,
+    points: Option<i32>,
     character: Character,
     friends: Vec<UserResp>,
 }
@@ -36,6 +37,7 @@ impl UserResp {
             username : user.username,
             created_at : user.created_at.unwrap(),
             times_logged_in : user.times_logged_in.unwrap(),
+            points: user.points,
             character : user.character.unwrap(),
             friends: user.friends.into_iter().map(UserResp::new).collect(),
         }
