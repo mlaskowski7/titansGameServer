@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use sqlx::MySqlPool;
 use crate::models::auth::User;
 use crate::models::characters::Character;
+use crate::models::lobbies::Lobby;
 
 pub async fn add_friend(user_id: i32, friend_id: i32, pool: &MySqlPool) -> Result<(), sqlx::Error> {
     sqlx::query!(
@@ -33,10 +34,12 @@ pub async fn load_friends_map(user_id: Option<i32>, pool: &MySqlPool) -> Result<
             r#"
             SELECT f.user_id, u.id AS friend_id, u.username AS friend_username, u.password AS friend_password,
                    u.created_at AS friend_created_at, u.times_logged_in AS friend_times_logged_in, u.points AS friend_points,
-                   c.id AS friend_character_id, c.name AS friend_character_name, c.health AS friend_character_health, c.strength AS friend_character_strength
+                   c.id AS friend_character_id, c.name AS friend_character_name, c.health AS friend_character_health, c.strength AS friend_character_strength,
+                   l.id AS lobby_id, l.name AS lobby_name, l.state AS lobby_state, l.max_players AS lobby_max_players
             FROM friends f
             INNER JOIN users u ON f.friend_id = u.id
             LEFT JOIN characters c ON u.character_id = c.id
+            LEFT JOIN lobbies l ON u.lobby_id = l.id
             WHERE ? IS NULL OR f.user_id = ?
             "#,
             user_id, user_id
@@ -69,6 +72,8 @@ pub async fn load_friends_map(user_id: Option<i32>, pool: &MySqlPool) -> Result<
             },
             character_id: row.friend_character_id,
             friends: Vec::new(),
+            lobby_id: row.lobby_id,
+            lobby: Lobby::new(row.lobby_id, row.lobby_name, row.lobby_state, row.lobby_max_players)
         };
 
         result.entry(row.user_id).or_insert_with(Vec::new).push(friend);

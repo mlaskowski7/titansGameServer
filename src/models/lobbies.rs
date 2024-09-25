@@ -25,7 +25,7 @@ impl Lobby {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub enum LobbyState {
     WAITING,
     CONFIGURING,

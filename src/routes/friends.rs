@@ -12,7 +12,7 @@ pub struct FriendBody {
 #[post("/api/friends/add")]
 pub async fn add_new_friend(body: web::Json<FriendBody>, pool: web::Data<MySqlPool>) -> impl Responder {
     match add_friend(body.user_id, body.friend_id, &pool).await {
-        Ok(_) => HttpResponse::Ok().json({body.friend_id}),
+        Ok(_) => HttpResponse::Ok().json(body.friend_id),
         Err(e) => {
             eprintln!("Error occurred while adding new friend to the user {:?}", e);
             HttpResponse::InternalServerError().json(e.to_string())
