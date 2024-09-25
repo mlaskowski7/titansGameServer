@@ -36,3 +36,16 @@ pub async fn obtain_lobby(name: String, pool: &MySqlPool) -> Result<Option<Lobby
 
     Ok(lobby.unwrap())
 }
+
+pub async fn update_user_lobby(user_id: i32, lobby_id: i32, pool: &MySqlPool) -> Result<(), sqlx::Error> {
+    sqlx::query!(
+        r#"
+        UPDATE users
+        SET lobby_id = ?
+        WHERE id = ?
+        "#,
+        lobby_id, user_id
+    ).execute(pool).await?;
+
+    Ok(())
+}

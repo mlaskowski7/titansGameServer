@@ -1,7 +1,7 @@
 use actix_web::{post, web, HttpResponse, Responder};
 use serde::Deserialize;
 use sqlx::MySqlPool;
-use crate::services::lobbies::add_new_lobby;
+use crate::services::lobbies::{add_new_lobby, update_user_lobby};
 
 #[derive(Deserialize)]
 pub struct LobbyBody {
@@ -29,12 +29,18 @@ pub async fn create_lobby(body: web::Json<LobbyBody>, pool: web::Data<MySqlPool>
     }
 }
 
-// #[post("/api/lobbies/add")]
-// pub async fn add_to_lobby(body: web::Json<AddToLobbyBody>, pool: web::Data<MySqlPool>) -> impl Responder {
-//     // TODO implement this
-// }
+#[post("/api/lobbies/add")]
+pub async fn add_user_to_lobby(body: web::Json<AddToLobbyBody>, pool: web::Data<MySqlPool>) -> impl Responder {
+    match update_user_lobby(body.user_id, body.lobby_id, &pool).await {
+        Ok(_) => HttpResponse::Ok().json(body.lobby_id),
+        Err(e) => {
+            eprintln!("Error occurred while adding user to lobby {:?}", e);
+            HttpResponse::InternalServerError().json(e.to_string())
+        }
+    }
+}
 
 pub fn config_lobbies_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(create_lobby);
-    // cfg.service(add_to_lobby);
+    cfg.service(add_user_to_lobby);
 }
