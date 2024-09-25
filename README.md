@@ -26,3 +26,6 @@ test with: `curl -i -X POST http://localhost:8080/api/friends/add -H "Content-Ty
 
 ## [POST] remove friend
 test with: `curl -i -X POST http://localhost:8080/api/friends/remove -H "Content-Type: application/json" -d '{"user_id": 1, "friend_id": 2}'`
+
+## [GET] get all users
+test with: `curl -i -X POST http://localhost:8080/api/lobbies -H "Content-Type: application/json" -d '{"name": "test_lobby", "state":0, "max_players":5}'`
