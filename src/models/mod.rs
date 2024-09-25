@@ -1,3 +1,4 @@
 pub mod auth;
 pub mod characters;
-mod friends;
+pub mod friends;
+pub mod lobbies;

@@ -1,4 +1,4 @@
-# API ENDPOINTS
+# API ENDPOINTS DOCUMENTATION
 
 ## [GET] get all users
 test with: `curl -i -X GET http://localhost:8080/api/auth/users`
