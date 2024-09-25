@@ -1,7 +1,8 @@
 # drop tables if they exist
-DROP TABLE friends;
-DROP TABLE characters;
-DROP TABLE users;
+DROP TABLE IF EXISTS friends;
+DROP TABLE IF EXISTS characters;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS lobbies;
 
 
 # create tables
@@ -20,6 +21,13 @@ VALUES
     ('Zombie', 120, 60),
     ('Minotaur', 150, 40);
 
+CREATE TABLE lobbies (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    state INT NOT NULL,
+    max_players INT NOT NULL
+);
+
 CREATE TABLE users (
    id INT AUTO_INCREMENT PRIMARY KEY,
    username VARCHAR(255) NOT NULL,
@@ -28,6 +36,7 @@ CREATE TABLE users (
    times_logged_in INT DEFAULT 1,
    points INT DEFAULT 0,
    character_id INT DEFAULT 1 NOT NULL,
+   lobby_id INT,
    FOREIGN KEY (character_id) REFERENCES characters(id)
 );
 
