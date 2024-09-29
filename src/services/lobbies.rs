@@ -37,6 +37,21 @@ pub async fn obtain_lobby(name: String, pool: &MySqlPool) -> Result<Option<Lobby
     Ok(lobby.unwrap())
 }
 
+pub async fn obtain_all_lobbies(pool: &MySqlPool) -> Result<Vec<Lobby>, sqlx::Error> {
+    let rows = sqlx::query!(
+        r#"
+        SELECT id, name, state, max_players
+        FROM lobbies
+        "#
+    ).fetch_all(pool).await?;
+
+    let lobbies = rows.into_iter().filter_map(|row| {
+        Lobby::new(Some(row.id), Some(row.name), Some(row.state), Some(row.max_players))
+    }).collect();
+
+    Ok(lobbies)
+}
+
 pub async fn update_user_lobby(user_id: i32, lobby_id: i32, pool: &MySqlPool) -> Result<(), sqlx::Error> {
     sqlx::query!(
         r#"

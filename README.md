@@ -32,3 +32,9 @@ test with: `curl -i -X POST http://localhost:8080/api/lobbies -H "Content-Type: 
 
 ## [POST] add user to lobby
 test with: `curl -i -X POST http://localhost:8080/api/lobbies/add -H "Content-Type: application/json" -d '{"user_id": 1, "lobby_id": 1}'`
+
+## [GET] get all lobbies
+test with: `curl -i -X GET http://localhost:8080/api/lobbies`
+
+## [GET] get lobby by name
+test with: `curl -i -X GET http://localhost:8080/api/lobbies/test_lobby`
