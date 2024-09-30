@@ -42,4 +42,13 @@ impl LobbyState {
             _ => LobbyState::FINISHED,
         }
     }
+
+    pub fn to_i32(self) -> i32 {
+        match self {
+            LobbyState::WAITING => 0,
+            LobbyState::CONFIGURING => 1,
+            LobbyState::ONGOING => 2,
+            LobbyState::FINISHED => 3,
+        }
+    }
 }
