@@ -1,7 +1,7 @@
 use actix_web::{get, post, web, HttpResponse, Responder};
 use serde::Deserialize;
 use sqlx::MySqlPool;
-use crate::services::lobbies::{add_new_lobby, obtain_all_lobbies, obtain_lobby, update_user_lobby};
+use crate::services::lobbies::{add_new_lobby, exit_user_from_lobby, obtain_all_lobbies, obtain_lobby, update_user_lobby};
 
 #[derive(Deserialize)]
 pub struct LobbyBody {
@@ -66,9 +66,21 @@ pub async fn add_user_to_lobby(body: web::Json<AddToLobbyBody>, pool: web::Data<
     }
 }
 
+#[post("/api/lobbies/exit/{user_id}")]
+pub async fn exit_lobby(user_id: web::Path<String>, pool: web::Data<MySqlPool>) -> impl Responder {
+    match exit_user_from_lobby(&user_id.parse::<i32>().unwrap(), &pool).await {
+        Ok(_) => HttpResponse::Ok().json(user_id.parse::<i32>().unwrap()),
+        Err(e) => {
+            eprintln!("Error occurred while adding user to lobby {:?}", e);
+            HttpResponse::InternalServerError().json(e.to_string())
+        }
+    }
+}
+
 pub fn config_lobbies_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(create_lobby);
     cfg.service(add_user_to_lobby);
     cfg.service(get_all_lobbies);
     cfg.service(get_lobby_by_name);
+    cfg.service(exit_lobby);
 }

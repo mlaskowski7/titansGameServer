@@ -38,3 +38,6 @@ test with: `curl -i -X GET http://localhost:8080/api/lobbies`
 
 ## [GET] get lobby by name
 test with: `curl -i -X GET http://localhost:8080/api/lobbies/test_lobby`
+
+## [POST] exit user from lobby
+test with: `curl -i -X POST http://localhost:8080/api/lobbies/exit/1`

@@ -64,3 +64,16 @@ pub async fn update_user_lobby(user_id: i32, lobby_id: i32, pool: &MySqlPool) ->
 
     Ok(())
 }
+
+pub async fn exit_user_from_lobby(user_id: &i32, pool: &MySqlPool) -> Result<(), sqlx::Error> {
+    sqlx::query!(
+        r#"
+        UPDATE users
+        SET lobby_id = NULL
+        WHERE id = ?
+        "#,
+        user_id
+    ).execute(pool).await?;
+
+    Ok(())
+}
