@@ -35,14 +35,11 @@ pub enum LobbyState {
 
 impl LobbyState {
     pub fn from_i32(state: i32) -> Self {
-        if state == 0 {
-            LobbyState::WAITING
-        } else if state == 1 {
-            LobbyState::CONFIGURING
-        } else if state == 2 {
-            LobbyState::ONGOING
-        } else{
-            LobbyState::FINISHED
+        match state {
+            0 => LobbyState::WAITING,
+            1 => LobbyState::CONFIGURING,
+            2 => LobbyState::ONGOING,
+            _ => LobbyState::FINISHED,
         }
     }
 }
