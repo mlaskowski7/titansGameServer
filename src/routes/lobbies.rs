@@ -1,7 +1,7 @@
 use actix_web::{get, post, web, HttpResponse, Responder};
 use serde::Deserialize;
 use sqlx::MySqlPool;
-use crate::services::lobbies::{add_new_lobby, exit_user_from_lobby, obtain_all_lobbies, obtain_lobby, update_user_lobby};
+use crate::services::lobbies::{add_new_lobby, exit_user_from_lobby, get_lobby_by_id, obtain_all_lobbies, obtain_lobby, update_user_lobby};
 
 #[derive(Deserialize)]
 pub struct LobbyBody {
@@ -55,6 +55,19 @@ pub async fn get_lobby_by_name(name: web::Path<String>, pool: web::Data<MySqlPoo
     }
 }
 
+#[get("/api/lobbies/id/{id}")]
+pub async fn get_lobby(id: web::Path<i32>, pool: web::Data<MySqlPool>) -> impl Responder {
+    match get_lobby_by_id(id.into_inner(), &pool).await {
+        Ok(lobby) => HttpResponse::Ok().json(lobby),
+        Err(e) => {
+            eprintln!("An error occurred while trying to retrieve lobby from db {}", e);
+            HttpResponse::InternalServerError().json({
+                format!("Error retrieving lobby: {:?}", e)
+            })
+        }
+    }
+}
+
 #[post("/api/lobbies/add")]
 pub async fn add_user_to_lobby(body: web::Json<AddToLobbyBody>, pool: web::Data<MySqlPool>) -> impl Responder {
     match update_user_lobby(body.user_id, body.lobby_id, &pool).await {
@@ -83,4 +96,5 @@ pub fn config_lobbies_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(get_all_lobbies);
     cfg.service(get_lobby_by_name);
     cfg.service(exit_lobby);
+    cfg.service(get_lobby);
 }
