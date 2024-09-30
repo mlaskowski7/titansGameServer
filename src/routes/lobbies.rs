@@ -1,7 +1,8 @@
-use actix_web::{get, post, web, HttpResponse, Responder};
+use actix_web::{get, post, put, web, HttpResponse, Responder};
 use serde::Deserialize;
 use sqlx::MySqlPool;
-use crate::services::lobbies::{add_new_lobby, exit_user_from_lobby, get_lobby_by_id, obtain_all_lobbies, obtain_lobby, update_user_lobby};
+use crate::models::lobbies::LobbyState;
+use crate::services::lobbies::{add_new_lobby, exit_user_from_lobby, get_lobby_by_id, obtain_all_lobbies, obtain_lobby, set_next_lobby_state, update_user_lobby};
 
 #[derive(Deserialize)]
 pub struct LobbyBody {
@@ -14,6 +15,12 @@ pub struct LobbyBody {
 pub struct AddToLobbyBody {
     pub user_id: i32,
     pub lobby_id: i32,
+}
+
+#[derive(Deserialize)]
+struct NextStateBody {
+    pub lobby_id: i32,
+    pub lobby_state: String,
 }
 
 #[post("/api/lobbies")]
@@ -90,6 +97,18 @@ pub async fn exit_lobby(user_id: web::Path<String>, pool: web::Data<MySqlPool>) 
     }
 }
 
+#[put("/api/lobbies/nextState")]
+pub async fn next_lobby_state(body: web::Json<NextStateBody>, pool: web::Data<MySqlPool>) -> impl Responder {
+    let state = LobbyState::from_str(&body.lobby_state);
+    match set_next_lobby_state(&body.lobby_id, &state, &pool).await {
+        Ok(_) => HttpResponse::Ok().json("next state uploaded successfully"),
+        Err(e) => {
+            eprintln!("Error occurred while setting next lobby state {:?}", e);
+            HttpResponse::InternalServerError().json(e.to_string())
+        }
+    }
+}
+
 pub fn config_lobbies_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(create_lobby);
     cfg.service(add_user_to_lobby);
@@ -97,4 +116,5 @@ pub fn config_lobbies_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(get_lobby_by_name);
     cfg.service(exit_lobby);
     cfg.service(get_lobby);
+    cfg.service(next_lobby_state);
 }

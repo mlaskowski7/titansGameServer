@@ -43,7 +43,17 @@ impl LobbyState {
         }
     }
 
-    pub fn to_i32(self) -> i32 {
+    pub fn from_str(state: &str) -> Self {
+        match state {
+            "WAITING" => LobbyState::WAITING,
+            "CONFIGURING" => LobbyState::CONFIGURING,
+            "ONGOING" => LobbyState::ONGOING,
+            "FINISHED" => LobbyState::FINISHED,
+            _ => LobbyState::FINISHED,
+        }
+    }
+
+    pub fn to_i32(&self) -> i32 {
         match self {
             LobbyState::WAITING => 0,
             LobbyState::CONFIGURING => 1,

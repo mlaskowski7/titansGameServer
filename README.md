@@ -44,3 +44,6 @@ test with: `curl -i -X GET http://localhost:8080/api/lobbies/id/1`
 
 ## [POST] exit user from lobby
 test with: `curl -i -X POST http://localhost:8080/api/lobbies/exit/1`
+
+## [PUT] set next lobby state
+test with: `curl -i -X PUT http://localhost:8080/api/lobbies/nextState -H "Content-Type: application/json" -d '{"lobby_id": 1, "lobby_state":"WAITING"}'`

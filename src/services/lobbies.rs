@@ -1,5 +1,5 @@
 use sqlx::MySqlPool;
-use crate::models::lobbies::Lobby;
+use crate::models::lobbies::{Lobby, LobbyState};
 
 pub async fn add_new_lobby(name: &str, state: i32, max_players: i32, pool: &MySqlPool) -> Result<Lobby, sqlx::Error> {
     sqlx::query!(
@@ -77,6 +77,20 @@ pub async fn update_user_lobby(user_id: i32, lobby_id: i32, pool: &MySqlPool) ->
         WHERE id = ?
         "#,
         lobby_id, user_id
+    ).execute(pool).await?;
+
+    Ok(())
+}
+
+pub async fn set_next_lobby_state(lobby_id: &i32, lobby_state: &LobbyState, pool: &MySqlPool) -> Result<(), sqlx::Error> {
+    let state = LobbyState::to_i32(lobby_state) + 1;
+    sqlx::query!(
+        r#"
+        UPDATE lobbies
+        SET state=?
+        WHERE id=?
+        "#,
+        state, lobby_id
     ).execute(pool).await?;
 
     Ok(())
