@@ -1,8 +1,9 @@
 # drop tables if they exist
 DROP TABLE IF EXISTS friends;
-DROP TABLE IF EXISTS characters;
-DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS lobbies;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS characters;
+
 
 
 # create tables

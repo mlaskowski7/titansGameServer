@@ -32,7 +32,7 @@ pub async fn load_friends_map(user_id: Option<i32>, pool: &MySqlPool) -> Result<
     // fetch all friendships
     let rows = sqlx::query!(
             r#"
-            SELECT f.user_id, u.id AS friend_id, u.username AS friend_username, u.password AS friend_password,
+            SELECT f.user_id, u.id AS friend_id, u.username AS friend_username, u.password AS friend_password, u.current_health AS friend_current_health,
                    u.created_at AS friend_created_at, u.times_logged_in AS friend_times_logged_in, u.points AS friend_points,
                    c.id AS friend_character_id, c.name AS friend_character_name, c.health AS friend_character_health, c.strength AS friend_character_strength,
                    l.id AS lobby_id, l.name AS lobby_name, l.state AS lobby_state, l.max_players AS lobby_max_players
@@ -58,6 +58,7 @@ pub async fn load_friends_map(user_id: Option<i32>, pool: &MySqlPool) -> Result<
             created_at: row.friend_created_at,
             points: row.friend_points,
             times_logged_in: row.friend_times_logged_in,
+            current_health: row.friend_current_health,
             character: if let Some(character_id) = row.friend_character_id {
                 Some(
                     Character {

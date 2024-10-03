@@ -11,6 +11,7 @@ pub struct User {
     pub password: String,
     pub created_at: Option<DateTime<Utc>>,
     pub times_logged_in: Option<i32>,
+    pub current_health: Option<i32>,
     pub character: Option<Character>,
     pub lobby: Option<Lobby>,
     pub points: Option<i32>,

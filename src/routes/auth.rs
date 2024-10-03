@@ -28,6 +28,7 @@ pub struct UserResp {
     times_logged_in: i32,
     points: Option<i32>,
     character: Character,
+    current_health: Option<i32>,
     friends: Vec<UserResp>,
     lobby: Option<Lobby>,
 }
@@ -40,6 +41,7 @@ impl UserResp {
             created_at : user.created_at.unwrap(),
             times_logged_in : user.times_logged_in.unwrap(),
             points: user.points,
+            current_health: user.current_health,
             character : user.character.unwrap(),
             friends: user.friends.into_iter().map(UserResp::new).collect(),
             lobby: user.lobby

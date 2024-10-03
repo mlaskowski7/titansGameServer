@@ -8,7 +8,7 @@ use crate::services::friends::load_friends_map;
 pub async fn obtain_all_users(pool: &MySqlPool) -> Result<Vec<User>, sqlx::Error> {
     let rows = sqlx::query!(
         r#"
-        SELECT u.id AS user_id, u.username, u.password, u.created_at, u.times_logged_in, u.points,
+        SELECT u.id AS user_id, u.username, u.password, u.created_at, u.times_logged_in, u.points, u.current_health,
                c.id AS character_id, c.name AS character_name, c.health AS character_health, c.strength AS character_strength,
                l.id AS lobby_id, l.name AS lobby_name, l.state AS lobby_state, l.max_players AS lobby_max_players
         FROM users u
@@ -43,6 +43,7 @@ pub async fn obtain_all_users(pool: &MySqlPool) -> Result<Vec<User>, sqlx::Error
                 times_logged_in: row.times_logged_in,
                 character,  // Load Character into the User struct
                 points: row.points,
+                current_health: row.current_health,
                 character_id: row.character_id,
                 friends: friends_map.get(&row.user_id).cloned().unwrap_or_default(),
                 lobby_id: row.lobby_id,
@@ -57,7 +58,7 @@ pub async fn obtain_all_users(pool: &MySqlPool) -> Result<Vec<User>, sqlx::Error
 pub async fn obtain_user(username: &str, pool: &MySqlPool) -> Result<Option<User>, sqlx::Error> {
     let row = sqlx::query!(
         r#"
-        SELECT u.id AS user_id, u.username, u.password, u.created_at, u.times_logged_in, u.points,
+        SELECT u.id AS user_id, u.username, u.password, u.created_at, u.times_logged_in, u.points, u.current_health,
                c.id AS character_id, c.name AS character_name, c.health AS character_health, c.strength AS character_strength,
                l.id AS lobby_id, l.name AS lobby_name, l.state AS lobby_state, l.max_players AS lobby_max_players
         FROM users u
@@ -100,6 +101,7 @@ pub async fn obtain_user(username: &str, pool: &MySqlPool) -> Result<Option<User
             created_at: row.created_at,
             times_logged_in: row.times_logged_in,
             character,  // Load Character into the User struct
+            current_health: row.current_health,
             points: row.points,
             character_id: row.character_id,
             friends: friends_map.get(&row.user_id).cloned().unwrap_or_default(),
@@ -129,7 +131,7 @@ pub async fn get_user_by_id(user_id: i32, pool: &MySqlPool) -> Result<Option<Use
     // obtain user from db
     let row = sqlx::query!(
         r#"
-        SELECT u.id, u.username, u.password, u.created_at, u.times_logged_in, u.points,
+        SELECT u.id, u.username, u.password, u.created_at, u.times_logged_in, u.points, u.current_health,
                c.id AS "character_id?", c.name AS "character_name?", c.health AS "character_health?", c.strength AS "character_strength?",
                l.id AS lobby_id, l.name AS lobby_name, l.state AS lobby_state, l.max_players AS lobby_max_players
         FROM users u
@@ -171,6 +173,7 @@ pub async fn get_user_by_id(user_id: i32, pool: &MySqlPool) -> Result<Option<Use
             times_logged_in: row.times_logged_in,
             points: row.points,
             character,  // Load Character into the User struct
+            current_health: row.current_health,
             character_id: row.character_id,
             friends: friends_map.get(&user_id).cloned().unwrap_or_default(),
             lobby_id: row.lobby_id,
@@ -226,8 +229,8 @@ pub async fn register_user(username: &str, password: &str, pool: &MySqlPool) -> 
     // insert the user into the db
     sqlx::query!(
         r#"
-        INSERT INTO users (username, password, character_id)
-        VALUES (?, ?, 1)
+        INSERT INTO users (username, password, character_id, current_health)
+        VALUES (?, ?, 1, 100)
         "#,
         username,
         hashed_password
