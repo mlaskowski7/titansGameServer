@@ -36,6 +36,7 @@ CREATE TABLE users (
    times_logged_in INT DEFAULT 1,
    points INT DEFAULT 0,
    character_id INT DEFAULT 1 NOT NULL,
+   current_health INT,
    lobby_id INT,
    FOREIGN KEY (character_id) REFERENCES characters(id)
 );
